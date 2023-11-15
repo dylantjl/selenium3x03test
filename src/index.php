@@ -1,70 +1,46 @@
-<?php 
-	session_start();
-	
-	if(isset($_POST['submit']))
-	{
-		if((isset($_POST['email']) && $_POST['email'] !='') && (isset($_POST['password']) && $_POST['password'] !=''))
-		{
-			$email = trim($_POST['email']);
-			$password = trim($_POST['password']);
-			
-			if($email == "user@example.com")
-			{	
-				if($password == "password1234")
-				{
-					$_SESSION['user_id'] = $email;
-					
-					header('location:dashboard.php');
-					exit;
-					
-				}
-			}
-			$errorMsg = "Login failed";
-		}
-	}
-?>
-
 <!DOCTYPE html>
 <html>
 <head>
-<title>Login Page | PHP Login and logout example with session</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>Test</title>
 </head>
-
 <body>
-	
-	<div class="container">
-		<h1>PHP Login and Logout with Session</h1>
-		<?php 
-			if(isset($errorMsg))
-			{
-				echo "<div class='error-msg'>";
-				echo $errorMsg;
-				echo "</div>";
-				unset($errorMsg);
-			}
-			
-			if(isset($_GET['logout']))
-			{
-				echo "<div class='success-msg'>";
-				echo "You have successfully logout";
-				echo "</div>";
-			}
-		?>
-		<form action="<?php echo $_SERVER['PHP_SELF']?>" method="post">
-			<div class="field-container">
-				<label>Email</label>
-				<input type="email" name="email" required placeholder="Enter Your Email">
-			</div>
-			<div class="field-container">
-				<label>Password</label>
-				<input type="password" name="password" required placeholder="Enter Your Password">
-			</div>
-			<div class="field-container">
-				<button type="submit" name="submit">Submit</button>
-			</div>
-			
-		</form>
-	</div>
+    <form action="search.php" method="post">
+        <label for="search">Search:</label>
+        <input type="text" id="search" name="search" placeholder="Enter your search term">
+        <button type="submit">Search</button>
+    </form>
+
+    <?php
+    if (isset($_POST['search'])) {
+        $search = $_POST['search'];
+        
+        // Sanitize the input (strip_tags removes any HTML/PHP tags)
+        $search = strip_tags($search);
+        
+        // Connect to your database using PDO
+        $dsn = 'mysql:host=localhost;dbname=your_database_name;charset=utf8mb4';
+        $username = 'your_username';
+        $password = 'your_password';
+        
+        try {
+            $pdo = new PDO($dsn, $username, $password);
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            
+            // Use a prepared statement to execute the query
+            $stmt = $pdo->prepare("SELECT * FROM your_table_name WHERE column_name LIKE :search");
+            $stmt->bindValue(':search', '%' . $search . '%', PDO::PARAM_STR);
+            $stmt->execute();
+            
+            // Process and display the results
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                // Display the results here
+                echo htmlspecialchars($row['column_name']) . '<br>';
+            }
+        } catch (PDOException $e) {
+            echo 'Error: ' . $e->getMessage();
+        }
+    }
+    ?>
 </body>
 </html>
